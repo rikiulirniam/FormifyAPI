@@ -74,7 +74,7 @@ class FormController extends Controller
      */
     public function show($slug)
     {
-        $form = Form::query()->with('questions')->where('slug', $slug)->first();
+        $form = Form::query()->with('allowed_domains')->with('questions')->where('slug', $slug)->first();
         if(!$form){
             return response()->json([
                 'message' => 'Form not found'
