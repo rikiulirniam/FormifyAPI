@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('answers', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::create('responses', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('form_id')->index('responses_form_id_foreign');
+            $table->unsignedBigInteger('user_id')->index('responses_user_id_foreign');
+            $table->dateTime('date');
         });
     }
 
@@ -22,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('answers');
+        Schema::dropIfExists('responses');
     }
 };

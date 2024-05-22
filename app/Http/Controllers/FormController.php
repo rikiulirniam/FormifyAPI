@@ -41,7 +41,6 @@ class FormController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required',
-            'slug' => 'required|unique:forms|regex:/^[a-zA-Z0-9.-]+$/',
             'allowed_domains' => 'array'
         ]);
         if($validator->fails()){
@@ -51,9 +50,22 @@ class FormController extends Controller
             ], 422);
         }
 
+        $slug = ['slug' => strtolower(implode('-', explode(' ', $request->name)))];
+
+
+        $validator_slug = Validator::make($slug, [
+            'slug' => 'required|unique:forms|regex:/^[a-zA-Z0-9.-]+$/',
+        ]);
+        if($validator_slug->fails()){
+            return response()->json([
+                'message' => 'Invalid token',
+                'errors' => $validator_slug->errors()
+            ], 422);
+        }
+
         $form = Form::create([
             'name' => $request->name,
-            'slug' => $request->slug,
+            'slug' => $slug['slug'],
             'description' => $request->description ?? NULL,
             'limit_one_response' => $request->limit_one_response,
             'creator_id' => Auth::user()->id
@@ -66,7 +78,10 @@ class FormController extends Controller
             ]);
         }
 
-        return response()->json($form);
+        return response()->json([
+            'message' => 'Create form success',
+            'form' => $form
+        ]);
     }
 
     /**
@@ -82,13 +97,13 @@ class FormController extends Controller
         }
         $user_domain = explode('@', Auth::user()->email)[1];
         $form_domain = AllowedDomain::query()->where('form_id', $form->id)->get();
+
+
         foreach($form_domain as $domain){
-            // return response()->json($domain->domain);
             if($user_domain != $domain->domain){
                 return response()->json(['message' => 'Forbidden access'], 403);
             };
         }
-        // if($form->)
         return response()->json($form);
     }
 

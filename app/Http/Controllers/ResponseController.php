@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Response;
 use App\Http\Requests\StoreResponseRequest;
 use App\Http\Requests\UpdateResponseRequest;
+use App\Http\Resources\GetResponse;
 use App\Models\AllowedDomain;
 use App\Models\Answer;
 use App\Models\Form;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
+use function PHPUnit\Framework\returnSelf;
+
 class ResponseController extends Controller
 {
     /**
@@ -22,7 +25,12 @@ class ResponseController extends Controller
     public function index($form_slug)
     {
         $form = Form::query()->where('slug', $form_slug)->first();
-        $response = Response::query()->with('user')->with('answers')->where('form_id', $form->id ?? NULL)->get();
+        $response = Response::query()
+        ->with('user')
+        ->with('answers')
+        ->where('form_id', $form->id ?? NULL)
+        ->get();
+        
         if(!$form){
             return response()->json([
                 'message' => 'Form not Found'
@@ -31,7 +39,11 @@ class ResponseController extends Controller
         if($form->creator_id != Auth::user()->id){
             return response()->json(['message' => 'Forbidden access'], 403);
         }
-        return response()->json($response);
+        // return response()->json([
+        //     'message' => 'Get responses Success',
+        //     'responses' => $response
+        // ]);
+        return response()->json(new GetResponse($response));
     }
 
     /**
@@ -82,7 +94,7 @@ class ResponseController extends Controller
             }
         }
 
-        $isEverSubmit = Response::query()->where('user_id', Auth::user()->id)->first();
+        $isEverSubmit = Response::query()->where('user_id', Auth::user()->id)->where('form_id', $form->id)->first();
 
         if($form->limit_one_response && $isEverSubmit){
             return response()->json(['message' => 'You cannot submit form twice'], 422);

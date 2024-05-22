@@ -24,10 +24,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function(){
     Route::post('auth/login', [AuthController::class, 'login']);
-    Route::middleware('auth:sanctum')->group(function(){
+    Route::post('auth/register', [AuthController::class, 'register']);
+    Route::middleware('auth:api')->group(function(){
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('auth/me', [AuthController::class, 'index']);
-        Route::apiResource('forms', FormController::class);
+        Route::get('forms/{slug}', [FormController::class, 'show']);
+        Route::apiResource('forms', FormController::class)->except('show');
         Route::apiResource('forms/{slug}/questions', QuestionController::class);
         Route::apiResource('forms/{slug}/responses', ResponseController::class);
     });
