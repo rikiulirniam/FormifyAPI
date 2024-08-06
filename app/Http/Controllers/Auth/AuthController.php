@@ -48,7 +48,7 @@ class AuthController extends Controller
     }
     
     public function logout(Request $request){
-        $user = Auth::guard('api')->user();
+        $user = Auth::user();
         if($user){
 
             $user->tokens()->delete();
